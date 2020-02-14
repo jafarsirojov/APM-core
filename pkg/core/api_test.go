@@ -1048,57 +1048,57 @@ func TestTransferMoney_NoDb(t *testing.T) {
 
 }
 
-func TestTransferMoney_HasDb(t *testing.T) {
-	db, err := sql.Open("sqlite3", ":memory:")
-	if err != nil {
-		t.Errorf("can't open db: %v", err)
-	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			t.Errorf("can't close db: %v", err)
-		}
-	}()
-
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS sumTransferUsers
-(
-    id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    balance INTEGER NOT NULL
-);`)
-	if err != nil {
-		t.Errorf("can't trancfer money: %v", err)
-	}
-	_, err = db.Exec(`INSERT INTO sumTransferUsers(id,balance)
-VALUES (1,0)
-       ON CONFLICT DO NOTHING;`)
-	if err != nil {
-		t.Errorf("can't trancfer money: %v", err)
-	}
-
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cards
-(
-   id      INTEGER PRIMARY KEY AUTOINCREMENT,
-   numberCard TEXT NOT NULL,
-   name    TEXT    NOT NULL,
-   balance INTEGER NOT NULL CHECK ( balance > 0 ),
-   user_id INTEGER REFERENCES users(id)
-);`)
-	if err != nil {
-		t.Errorf("can't creat atm to get all atm: %v", err)
-	}
-
-	_, err = db.Exec(`INSERT INTO cards(id,name, balance, user_id, numberCard) VALUES (1,"AlifMobi",200,0,"20216000000000001")`)
-	if err != nil {
-		t.Errorf("can't get all card, add card: %v", err)
-	}
-
-	_, err = db.Exec(`INSERT INTO cards(id,name, balance, user_id, numberCard) VALUES (2,"AlifMobi",400,1,"20216000000000002")`)
-	if err != nil {
-		t.Errorf("can't get all card, add card: %v", err)
-	}
-
-	err = TransferMoney(100, db)
-	if err != nil {
-		t.Errorf("can't trancfer money: %v", err)
-	}
-
-}
+//func TestTransferMoney_HasDb(t *testing.T) {
+//	db, err := sql.Open("sqlite3", ":memory:")
+//	if err != nil {
+//		t.Errorf("can't open db: %v", err)
+//	}
+//	defer func() {
+//		if err := db.Close(); err != nil {
+//			t.Errorf("can't close db: %v", err)
+//		}
+//	}()
+//
+//	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS sumTransferUsers
+//(
+//    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+//    balance INTEGER NOT NULL
+//);`)
+//	if err != nil {
+//		t.Errorf("can't trancfer money: %v", err)
+//	}
+//	_, err = db.Exec(`INSERT INTO sumTransferUsers(id,balance)
+//VALUES (1,0)
+//       ON CONFLICT DO NOTHING;`)
+//	if err != nil {
+//		t.Errorf("can't trancfer money: %v", err)
+//	}
+//
+//	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS cards
+//(
+//   id      INTEGER PRIMARY KEY AUTOINCREMENT,
+//   numberCard TEXT NOT NULL,
+//   name    TEXT    NOT NULL,
+//   balance INTEGER NOT NULL CHECK ( balance > 0 ),
+//   user_id INTEGER REFERENCES users(id)
+//);`)
+//	if err != nil {
+//		t.Errorf("can't creat atm to get all atm: %v", err)
+//	}
+//
+//	_, err = db.Exec(`INSERT INTO cards(id,name, balance, user_id, numberCard) VALUES (1,"AlifMobi",200,0,"20216000000000001")`)
+//	if err != nil {
+//		t.Errorf("can't get all card, add card: %v", err)
+//	}
+//
+//	_, err = db.Exec(`INSERT INTO cards(id,name, balance, user_id, numberCard) VALUES (2,"AlifMobi",400,1,"20216000000000002")`)
+//	if err != nil {
+//		t.Errorf("can't get all card, add card: %v", err)
+//	}
+//
+//	err = TransferMoney(100, db)
+//	if err != nil {
+//		t.Errorf("can't trancfer money: %v", err)
+//	}
+//
+//}

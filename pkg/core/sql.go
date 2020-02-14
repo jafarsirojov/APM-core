@@ -32,9 +32,10 @@ const operationsLoggingDDL = `
 CREATE TABLE IF NOT EXISTS operationsLogging
 (
    id      INTEGER PRIMARY KEY AUTOINCREMENT,
-   time TEXT NOT NULL,
-   name    TEXT    NOT NULL,
-   balance INTEGER NOT NULL CHECK ( balance > 0 ),
+   name    TEXT NOT NULL,
+   time    TEXT NOT NULL,
+   recipientSender TEXT NOT NULL,
+   balance INTEGER,
    user_id INTEGER REFERENCES users(id)
 );`
 
@@ -93,6 +94,7 @@ const insertAtmSQL = `INSERT INTO atm(name, address) VALUES ( :name, :address);`
 const insertServiceSQL = `INSERT INTO services(name , balance) VALUES( :name, :balance);`
 const insertCardSQL = `INSERT INTO cards(name, balance, user_id, numberCard) VALUES ( :name, :balance, :user_id, :numberCard);`
 const insertUserSQL = `INSERT INTO users(name, login, password, passportSeries, phoneNumber, hideShow) VALUES (:name , :login, :password, :passportSeries, :phoneNumber, :hideShow);`
+const insertOperationsLoggingSQL = `INSERT INTO operationsLogging(name, time, recipientSender, balance, user_id) VALUES (:name, :time, :recipientSender, :balance, :user_id);`
 
 
 const updateBalanceToCardSenderSQL = `UPDATE cards SET balance=? WHERE user_id = ?`
@@ -102,6 +104,9 @@ const updateBalanceSumTransferUsersSQL  = `UPDATE sumTransferUsers SET balance =
 
 const selectBalanceToCardSenderSQL = `SELECT balance FROM cards WHERE user_id = ?`
 const selectBalanceToCardRecipientSQL = `SELECT balance FROM cards WHERE id = ?`
+const selectNumberCardToIdCardSQL = `SELECT numberCard FROM cards WHERE id = ?`
+const selectNumberCardFromUser_idCardSQL = `SELECT numberCard FROM cards WHERE user_id = ?`
+const selectUser_idWhereIdCardSQL = `SELECT user_id FROM cards WHERE id = ?`
 
 const selectDescIdFromCardSQL = `SELECT id FROM cards ORDER BY id DESC LIMIT 1;`
 

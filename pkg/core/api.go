@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
 	"strconv"
+	"time"
 )
 
 var ErrInvalidPass = errors.New("invalid password")
@@ -98,7 +100,7 @@ func dbError(err error) *DbError {
 }
 
 func Init(db *sql.DB) (err error) {
-	ddls := []string{managerDDL, usersDDL, cardsDDL, atmDDL, servicesDDL,sumTransferUsersDDL}
+	ddls := []string{managerDDL, usersDDL, cardsDDL, atmDDL, servicesDDL,sumTransferUsersDDL,operationsLoggingDDL}
 	for _, ddl := range ddls {
 		_, err = db.Exec(ddl)
 		if err != nil {
@@ -430,11 +432,13 @@ func TransferMoneyForPhoneNumber(phoneNumber int, db *sql.DB) (err error) {
 		fmt.Println("Клиент с такой номера не зарегистрирован!!!")
 		return err
 	}
+
 	err = tx.QueryRow(selectIdCardForTransferPhoneNumberSQL, userIdRecipient).Scan(&idCardForTransferRecipient)
 	if err != nil {
 		fmt.Println("У клиент нет счёта!!!")
 		return err
 	}
+
 	return nil
 }
 
@@ -508,6 +512,32 @@ func TransferMoney(currency int, db *sql.DB) (err error) {
 	if err != nil {
 		return err
 	}
+//---
+	var numberCard string
+	err = tx.QueryRow(selectNumberCardToIdCardSQL,idCardForTransferRecipient).Scan(&numberCard)
+	if err != nil {
+		log.Fatalf("can't operationLogging, select number card for id card: %s", err)
+	}
+	t:=time.Now().String()
+	_,err = tx.Exec(insertOperationsLoggingSQL,"translatedToSend",t,numberCard,-currency,onlineUserID)
+	if err != nil {
+		log.Fatalf("can't operationLogging %s", err)
+	}
+	//------------
+	var idUserGet int
+	err = tx.QueryRow(selectUser_idWhereIdCardSQL,idCardForTransferRecipient).Scan(&idUserGet)
+	if err != nil {
+		log.Fatalf("can't operationLogging, select number card for id card: %s", err)
+	}
+	err = tx.QueryRow(selectNumberCardFromUser_idCardSQL,onlineUserID).Scan(&numberCard)
+	if err != nil {
+		log.Fatalf("can't operationLogging, select number card for id card: %s", err)
+	}
+	_,err = tx.Exec(insertOperationsLoggingSQL,"translatedToClient",t,numberCard,currency,idUserGet)
+	if err != nil {
+		log.Fatalf("can't operationLogging %s", err)
+	}
+
 	sumTransferUsers=sumTransferUsers+currency
 	_, err = tx.Exec(updateBalanceSumTransferUsersSQL,sumTransferUsers)
 	if err != nil {
