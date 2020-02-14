@@ -75,7 +75,7 @@ VALUES (1,0)
 const loginManagerSQL = `SELECT login, password FROM manager WHERE login = ?`
 const loginUsersSQL = `SELECT id, login, password, hideShow FROM users WHERE login = ?`
 
-const selectBalanceSumTransferUsers  = `SELECT balance FROM sumTransferUsers`
+const selectBalanceSumTransferUsers = `SELECT balance FROM sumTransferUsers`
 const selectIdUserPhoneNumberSQL = `SELECT id FROM users WHERE phoneNumber = ?`
 const selectIdCardForTransferPhoneNumberSQL = `SELECT id FROM cards WHERE user_id= ?`
 const selectIdCardForTransferCountNumberSQL = `SELECT id FROM cards WHERE numberCard= ?`
@@ -88,7 +88,7 @@ const getAllCardsSQL = `SELECT id, name, balance, user_id, numberCard FROM cards
 const getAllUsersSQL = `SELECT id, name, passportSeries, phoneNumber FROM users;`
 const getUserCardsSQL = `SELECT id, name, balance, numberCard FROM cards WHERE user_id = ?`
 const getHideUserSQL = `SELECT id, name, passportSeries, phoneNumber FROM users WHERE hideShow = ?`
-
+const getOperationsLoggingUserSQL = `SELECT id, name, time, recipientSender, balance FROM operationsLogging WHERE user_id = ?`
 
 const insertAtmSQL = `INSERT INTO atm(name, address) VALUES ( :name, :address);`
 const insertServiceSQL = `INSERT INTO services(name , balance) VALUES( :name, :balance);`
@@ -96,11 +96,9 @@ const insertCardSQL = `INSERT INTO cards(name, balance, user_id, numberCard) VAL
 const insertUserSQL = `INSERT INTO users(name, login, password, passportSeries, phoneNumber, hideShow) VALUES (:name , :login, :password, :passportSeries, :phoneNumber, :hideShow);`
 const insertOperationsLoggingSQL = `INSERT INTO operationsLogging(name, time, recipientSender, balance, user_id) VALUES (:name, :time, :recipientSender, :balance, :user_id);`
 
-
 const updateBalanceToCardSenderSQL = `UPDATE cards SET balance=? WHERE user_id = ?`
 const updateBalanceToCardRecipientSQL = `UPDATE cards SET balance=? WHERE id = ?`
-const updateBalanceSumTransferUsersSQL  = `UPDATE sumTransferUsers SET balance = ?`
-
+const updateBalanceSumTransferUsersSQL = `UPDATE sumTransferUsers SET balance = ?`
 
 const selectBalanceToCardSenderSQL = `SELECT balance FROM cards WHERE user_id = ?`
 const selectBalanceToCardRecipientSQL = `SELECT balance FROM cards WHERE id = ?`
@@ -117,8 +115,7 @@ const updateHideShowUser = `UPDATE users SET hideShow = ? WHERE id = ?`
 
 const searchUserForPhoneNumberSQL = `SELECT id, name, passportSeries, phoneNumber FROM users WHERE phoneNumber = ?`
 
-const staticCountUserSQL  = `SELECT count(id) FROM users`
-const staticSumBalanceUsersSQL  = `SELECT sum(balance) FROM cards`
-const staticBalanceOfServicesSQL  = `SELECT sum(balance) FROM services`
-const staticBalanceOfServiceSQL  = `SELECT name, balance FROM services`
-
+const staticCountUserSQL = `SELECT count(id) FROM users`
+const staticSumBalanceUsersSQL = `SELECT sum(balance) FROM cards`
+const staticBalanceOfServicesSQL = `SELECT sum(balance) FROM services`
+const staticBalanceOfServiceSQL = `SELECT name, balance FROM services`

@@ -57,7 +57,7 @@ type User struct {
 	Name           string
 	PassportSeries string
 	NumberPhone    int
-	HideShow int
+	HideShow       int
 }
 
 type UserHide struct {
@@ -74,6 +74,14 @@ type UserShow struct {
 	NumberPhone    int
 }
 
+type OperationsLogging struct {
+	Id              int64
+	Name            string
+	Time            string
+	RecipientSender string
+	Balance         int
+	User_id         int
+}
 
 func (receiver *QueryError) Unwrap() error {
 	return receiver.Err
@@ -100,7 +108,7 @@ func dbError(err error) *DbError {
 }
 
 func Init(db *sql.DB) (err error) {
-	ddls := []string{managerDDL, usersDDL, cardsDDL, atmDDL, servicesDDL,sumTransferUsersDDL,operationsLoggingDDL}
+	ddls := []string{managerDDL, usersDDL, cardsDDL, atmDDL, servicesDDL, sumTransferUsersDDL, operationsLoggingDDL}
 	for _, ddl := range ddls {
 		_, err = db.Exec(ddl)
 		if err != nil {
@@ -108,7 +116,7 @@ func Init(db *sql.DB) (err error) {
 		}
 	}
 
-	initialData := []string{managerInitialData,sumTransferUsersDDLInitialData}
+	initialData := []string{managerInitialData, sumTransferUsersDDLInitialData}
 	for _, datum := range initialData {
 		_, err = db.Exec(datum)
 		if err != nil {
@@ -202,7 +210,6 @@ func GetAllAtms(db *sql.DB) (atms []Atm, err error) {
 			atms, err = nil, dbError(innerErr)
 		}
 	}()
-
 
 	for rows.Next() {
 		atm := Atm{}
@@ -512,34 +519,34 @@ func TransferMoney(currency int, db *sql.DB) (err error) {
 	if err != nil {
 		return err
 	}
-//---
+	//---
 	var numberCard string
-	err = tx.QueryRow(selectNumberCardToIdCardSQL,idCardForTransferRecipient).Scan(&numberCard)
+	err = tx.QueryRow(selectNumberCardToIdCardSQL, idCardForTransferRecipient).Scan(&numberCard)
 	if err != nil {
 		log.Fatalf("can't operationLogging, select number card for id card: %s", err)
 	}
-	t:=time.Now().String()
-	_,err = tx.Exec(insertOperationsLoggingSQL,"translatedToSend",t,numberCard,-currency,onlineUserID)
+	t := time.Now().String()
+	_, err = tx.Exec(insertOperationsLoggingSQL, "translatedToSend", t, numberCard, -currency, onlineUserID)
 	if err != nil {
 		log.Fatalf("can't operationLogging %s", err)
 	}
 	//------------
 	var idUserGet int
-	err = tx.QueryRow(selectUser_idWhereIdCardSQL,idCardForTransferRecipient).Scan(&idUserGet)
+	err = tx.QueryRow(selectUser_idWhereIdCardSQL, idCardForTransferRecipient).Scan(&idUserGet)
 	if err != nil {
 		log.Fatalf("can't operationLogging, select number card for id card: %s", err)
 	}
-	err = tx.QueryRow(selectNumberCardFromUser_idCardSQL,onlineUserID).Scan(&numberCard)
+	err = tx.QueryRow(selectNumberCardFromUser_idCardSQL, onlineUserID).Scan(&numberCard)
 	if err != nil {
 		log.Fatalf("can't operationLogging, select number card for id card: %s", err)
 	}
-	_,err = tx.Exec(insertOperationsLoggingSQL,"translatedToClient",t,numberCard,currency,idUserGet)
+	_, err = tx.Exec(insertOperationsLoggingSQL, "translatedToGet", t, numberCard, currency, idUserGet)
 	if err != nil {
 		log.Fatalf("can't operationLogging %s", err)
 	}
 
-	sumTransferUsers=sumTransferUsers+currency
-	_, err = tx.Exec(updateBalanceSumTransferUsersSQL,sumTransferUsers)
+	sumTransferUsers = sumTransferUsers + currency
+	_, err = tx.Exec(updateBalanceSumTransferUsersSQL, sumTransferUsers)
 	if err != nil {
 		return err
 	}
@@ -600,7 +607,7 @@ func UserHideManager(userId int, db *sql.DB) (err error) {
 	}()
 
 	_, err = tx.Exec(
-		updateHideShowUser,4, userId,
+		updateHideShowUser, 4, userId,
 	)
 
 	if err != nil {
@@ -624,7 +631,7 @@ func UserShowManager(userId int, db *sql.DB) (err error) {
 	}()
 
 	_, err = tx.Exec(
-		updateHideShowUser,3, userId,
+		updateHideShowUser, 3, userId,
 	)
 
 	if err != nil {
@@ -635,7 +642,7 @@ func UserShowManager(userId int, db *sql.DB) (err error) {
 }
 
 func GetHideUsers(db *sql.DB) (users []UserHide, err error) {
-	rows, err := db.Query(getHideUserSQL,4)
+	rows, err := db.Query(getHideUserSQL, 4)
 	if err != nil {
 		return nil, nil
 	}
@@ -660,7 +667,7 @@ func GetHideUsers(db *sql.DB) (users []UserHide, err error) {
 }
 
 func GetShowUsers(db *sql.DB) (users []UserShow, err error) {
-	rows, err := db.Query(getHideUserSQL,3)
+	rows, err := db.Query(getHideUserSQL, 3)
 	if err != nil {
 		return nil, nil
 	}
@@ -686,7 +693,7 @@ func GetShowUsers(db *sql.DB) (users []UserShow, err error) {
 
 func SearchUserByPhoneNumber(phoneNumber int, db *sql.DB) (users []User, err error) {
 	rows, err := db.Query(
-		searchUserForPhoneNumberSQL,phoneNumber,
+		searchUserForPhoneNumberSQL, phoneNumber,
 	)
 	if err != nil {
 		return nil, queryError(getAllUsersSQL, err)
@@ -711,22 +718,47 @@ func SearchUserByPhoneNumber(phoneNumber int, db *sql.DB) (users []User, err err
 	return users, nil
 }
 
-func StaticCountUsers(db *sql.DB)(count int){
+func StaticCountUsers(db *sql.DB) (count int) {
 	db.QueryRow(staticCountUserSQL).Scan(&count)
 	return count
 }
 
-func StaticSumBalanceUsers(db *sql.DB)(sum int){
+func StaticSumBalanceUsers(db *sql.DB) (sum int) {
 	db.QueryRow(staticSumBalanceUsersSQL).Scan(&sum)
 	return sum
 }
 
-func StaticBalanceOfServices(db *sql.DB)(sum int){
+func StaticBalanceOfServices(db *sql.DB) (sum int) {
 	db.QueryRow(staticBalanceOfServicesSQL).Scan(&sum)
 	return sum
 }
 
-func StaticBalanceSumTransfer(db *sql.DB)(sum int){
+func StaticBalanceSumTransfer(db *sql.DB) (sum int) {
 	db.QueryRow(selectBalanceSumTransferUsers).Scan(&sum)
 	return sum
+}
+
+func ViewOperationsLogging(db *sql.DB) (opLogs []OperationsLogging, err error) {
+	rows, err := db.Query(getOperationsLoggingUserSQL, onlineUserID)
+	if err != nil {
+		return nil, queryError(getOperationsLoggingUserSQL, err)
+	}
+	defer func() {
+		if innerErr := rows.Close(); innerErr != nil {
+			opLogs, err = nil, dbError(innerErr)
+		}
+	}()
+
+	for rows.Next() {
+		opLog := OperationsLogging{}
+		err = rows.Scan(&opLog.Id, &opLog.Name, &opLog.Time, &opLog.RecipientSender, &opLog.Balance)
+		if err != nil {
+			return nil, dbError(err)
+		}
+		opLogs = append(opLogs, opLog)
+	}
+	if rows.Err() != nil {
+		return nil, dbError(rows.Err())
+	}
+	return opLogs, err
 }
