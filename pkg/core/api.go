@@ -524,7 +524,7 @@ func TransferMoney(currency int, db *sql.DB) (err error) {
 	if err != nil {
 		return err
 	}
-	//---
+
 	var numberCard string
 	err = tx.QueryRow(selectNumberCardToIdCardSQL, idCardForTransferRecipient).Scan(&numberCard)
 	if err != nil {
@@ -592,6 +592,9 @@ func TransferServices(currency int, name string, db *sql.DB) (err error) {
 	_, err = tx.Exec(
 		updateBalanceServiceSQL, currencyService, name,
 	)
+	t := time.Now().String()
+
+	_,err = tx.Exec(insertOperationsLoggingSQL,"payToService",t,name,-currency,onlineUserID)
 	if err != nil {
 		return err
 	}
@@ -792,7 +795,6 @@ func ViewOperationsLoggingToSearch(idUser int, db *sql.DB) (opLogs []OperationsL
 	}
 	return opLogs, err
 }
-
 
 func ViewAllOperationsLogging(db *sql.DB) (opLogs []OperationsLogging, err error) {
 	rows, err := db.Query(getAllOperationsLoggingUserSQL)
