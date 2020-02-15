@@ -89,6 +89,7 @@ const getAllUsersSQL = `SELECT id, name, passportSeries, phoneNumber FROM users;
 const getUserCardsSQL = `SELECT id, name, balance, numberCard FROM cards WHERE user_id = ?`
 const getHideUserSQL = `SELECT id, name, passportSeries, phoneNumber FROM users WHERE hideShow = ?`
 const getOperationsLoggingUserSQL = `SELECT id, name, time, recipientSender, balance FROM operationsLogging WHERE user_id = ?`
+const getAllOperationsLoggingUserSQL = `SELECT id, name, time, recipientSender, balance FROM operationsLogging`
 
 const insertAtmSQL = `INSERT INTO atm(name, address) VALUES ( :name, :address);`
 const insertServiceSQL = `INSERT INTO services(name , balance) VALUES( :name, :balance);`
